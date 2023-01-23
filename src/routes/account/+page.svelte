@@ -21,8 +21,6 @@
 		};
 	};
 
-	$: console.log(userDetails);
-
 	$: subscriptionPrice =
 		subscription &&
 		new Intl.NumberFormat('en-US', {
