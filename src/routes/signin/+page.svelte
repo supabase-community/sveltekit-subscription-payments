@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { supabaseClient } from '$lib/db';
+	import { getValid } from '$lib/helpers';
 
-	const getType = (type: string): Screen =>
-		validTypes.includes(type as Screen) ? (type as Screen) : 'password';
-	type Screen = 'password' | 'signup' | 'magiclink';
-	const validTypes: Screen[] = ['password', 'signup', 'magiclink'];
-	$: screen = getType($page.url.searchParams.get('type') ?? 'password');
+	$: authType = getValid($page.url.searchParams.get('type'), [
+		'password',
+		'signup',
+		'magiclink'
+	] as const);
 
 	let email = '';
 	let password = '';
@@ -16,15 +17,15 @@
 
 	async function handleSubmit() {
 		message = '';
-		if (screen === 'password') {
+		if (authType === 'password') {
 			const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
 			isError = !!error;
 			message = isError ? 'Something went wrong' : 'Successfully signed in';
-		} else if (screen === 'signup') {
+		} else if (authType === 'signup') {
 			const { error } = await supabaseClient.auth.signUp({ email, password });
 			isError = !!error;
 			message = isError ? 'Something went wrong' : 'Successfully signed up';
-		} else if (screen === 'magiclink') {
+		} else if (authType === 'magiclink') {
 			const { error } = await supabaseClient.auth.signInWithOtp({ email });
 			isError = !!error;
 			message = isError ? 'Something went wrong' : 'Take a look at your inbox';
@@ -54,7 +55,7 @@
 			/>
 		</label>
 
-		{#if screen !== 'magiclink'}
+		{#if authType !== 'magiclink'}
 			<label class="flex flex-col gap-2">
 				<span class="text-neutral-400 text-sm">Your Password</span>
 				<input
@@ -70,11 +71,11 @@
 			class="bg-neutral-500 font-semibold px-3 py-2 rounded hover:bg-slate-500 focus:ring"
 			type="submit"
 		>
-			{screen === 'password' ? 'Sign in' : screen === 'signup' ? 'Sign up' : 'Send Magic Link'}
+			{authType === 'password' ? 'Sign in' : authType === 'signup' ? 'Sign up' : 'Send Magic Link'}
 		</button>
 
 		<div class="flex flex-col gap-2 mt-2 text-sm ">
-			{#if screen !== 'password'}
+			{#if authType !== 'password'}
 				<a
 					class="text-neutral-400 hover:text-neutral-300 transition-colors underline"
 					href="?type=password"

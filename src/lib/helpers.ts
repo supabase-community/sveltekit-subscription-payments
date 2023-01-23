@@ -17,3 +17,7 @@ export const getURL = () => {
 	url = url.charAt(url.length - 1) === '/' ? url.slice(0, -1) : url;
 	return url;
 };
+
+export function getValid<T extends readonly string[]>(value: string | null, valid: T): T[number] {
+	return valid.includes(value as T[number]) ? (value as T[number]) : valid[0];
+}
